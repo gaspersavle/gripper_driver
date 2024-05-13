@@ -12,7 +12,7 @@ GPIO_PIN_R_b = 3
 SERVICE_NAME_LEFT="gripper_left"
 SERVICE_NAME_RIGHT="gripper_right"
 
-DELAY = 6
+DELAY = 4
 
 class GPIOControlNode(Node):
     def __init__(self):
