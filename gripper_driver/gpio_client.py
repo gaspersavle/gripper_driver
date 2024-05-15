@@ -9,53 +9,54 @@ GRIPPER_R = 'gripper_right'
 class GPIOControlClient(Node):
     def __init__(self):
         super().__init__('gpio_control_client')
-        self.client = self.create_client(SetBool, GRIPPER_L)
-        self.client = self.create_client(SetBool, GRIPER_R)
+        self.client_left = self.create_client(SetBool, GRIPPER_L)
+        self.client_right = self.create_client(SetBool, GRIPER_R)
 
     def write_gpio_pin_left(self, pin_state):
         request = SetBool.Request()
         request.data = pin_state
 
-        while not self.client.wait_for_service(timeout_sec=1.0):
+        while not self.client_left.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('Service not available, waiting again...')
 
-        future = self.client.call_async(request)
+        future = self.client_left.call_async(request)
         rclpy.spin_until_future_complete(self, future)
  
         if future.result() is not None:
-            self.node.get_logger().info('GPIO pin toggled successfully')
+            self.get_logger().info('GPIO pin toggled successfully')
         else:
-            self.node.get_logger().error('Failed to toggle GPIO pin')
+            self.get_logger().error('Failed to toggle GPIO pin')
                                          
     def write_gpio_pin_right(self, pin_state):   
         request = SetBool.Request()
         request.data = pin_state
  
-        while not self.client.wait_for_service(timeout_sec=1.0):
+        while not self.client_right.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('Service not available, waiting again...')
  
-        future = self.client.call_async(request)
+        future = self.client_right.call_async(request)
         rclpy.spin_until_future_complete(self, future)
  
         if future.result() is not None:
-            self.node.get_logger().info('GPIO pin toggled successfully')
+            self.get_logger().info('GPIO pin toggled successfully')
         else:
-            self.node.get_logger().error('Failed to toggle GPIO pin')
+            self.get_logger().error('Failed to toggle GPIO pin')
  
     def write_gpio_pins(self, pin_state):        
         request = SetBool.Request()
         request.data = pin_state     
                                                                          
-        while not self.client.wait_for_service(timeout_sec=1.0):
+        while not self.client_left.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('Service not available, waiting again...')
                     
-        future = self.client.call_async(request)
-        rclpy.spin_until_future_complete(self, future)
+        future_left = self.client_left.call_async(request)
+        future_right = self.client_right.call_async(request)
+        rclpy.spin_until_future_complete(self, future_right)
           
         if future.result() is not None:
-            self.node.get_logger().info('GPIO pin toggled successfully')
+            self.get_logger().info('GPIO pin toggled successfully')
         else:                                                                                                                                                                                                                                 
-            self.node.get_logger().error('Failed to toggle GPIO pin') 
+            self.get_logger().error('Failed to toggle GPIO pin') 
 
     def main():
         rclpy.init()
