@@ -33,32 +33,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
-
-
-
-    request.data = pin_state
-
-    while not client.wait_for_service(timeout_sec=1.0):
-        node.get_logger().info('Service not available, waiting again...')
-
-    future = client.call_async(request)
-
-    rclpy.spin_until_future_complete(node, future)
-
-    if future.result() is not None:
-        node.get_logger().info('GPIO pin toggled successfully')
-    else:
-        node.get_logger().error('Failed to toggle GPIO pin')
-
-    node.destroy_node()
-    rclpy.shutdown()
-
-if __name__ == '__main__':
-    pin_state = True  # Set to True to turn on the pin, False to turn off
-    toggle_gpio_pin(pin_state)
