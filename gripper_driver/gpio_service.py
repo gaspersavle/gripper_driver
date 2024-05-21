@@ -4,8 +4,8 @@ from rclpy.node import Node
 import RPi.GPIO as GPIO
 import time
 
-GPIO_PIN_L_a = 14
-GPIO_PIN_L_b = 15
+GPIO_PIN_L_a = 17
+GPIO_PIN_L_b = 27
 GPIO_PIN_R_a = 2
 GPIO_PIN_R_b = 3
 
@@ -20,6 +20,7 @@ class GPIOControlNode(Node):
         self.service_left= self.create_service(SetBool, SERVICE_NAME_LEFT, self.gpio_control_callback_L)
         self.service_right = self.create_service(SetBool, SERVICE_NAME_RIGHT, self.gpio_control_callback_R)
         GPIO.setmode(GPIO.BCM)
+
         GPIO.setup(GPIO_PIN_L_a, GPIO.OUT)
         GPIO.setup(GPIO_PIN_L_b, GPIO.OUT)
         GPIO.setup(GPIO_PIN_R_a, GPIO.OUT)
