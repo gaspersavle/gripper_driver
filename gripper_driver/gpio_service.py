@@ -1,7 +1,7 @@
 from std_srvs.srv import SetBool
 import rclpy
 from rclpy.node import Node
-import RPi.GPIO as GPIO
+import gpiozero as GPIO
 import time
 
 GPIO_PIN_L_a = 17
