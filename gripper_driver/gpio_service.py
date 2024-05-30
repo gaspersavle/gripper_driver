@@ -1,7 +1,7 @@
-from std_srvs.srv import SetBool
-import rclpy
+#!/usr/bin/env python
+import rospy
+from std_srvs.srv import SetBool, SetBoolResponse
 from colorama import Fore
-from rclpy.node import Node
 import RPi.GPIO as GPIO
 import time
 
@@ -10,55 +10,58 @@ GPIO_PIN_L_b = 27
 GPIO_PIN_R_a = 2
 GPIO_PIN_R_b = 3
 
-SERVICE_NAME ="gripper_open"
+SERVICE_NAME = "gripper_open"
 PARAMETER_NAME = "gripper_delay"
 
-class GPIOControlNode(Node):
+class GPIOControlNode:
     def __init__(self):
-        super().__init__('gpio_control_node')
         DEFAULT_DELAY = 4
-        self.delay = None
-        self.service= self.create_service(SetBool, SERVICE_NAME, self.gpio_control_callback)
-        self.declare_parameter(PARAMETER_NAME, DEFAULT_DELAY)
-        GPIO.setmode(GPIO.BCM)
+        rospy.init_node('gpio_control_node')
 
+        self.delay = rospy.set_param(PARAMETER_NAME, DEFAULT_DELAY)
+        
+        self.service = rospy.Service(SERVICE_NAME, SetBool, self.gpio_control_callback)
+
+        GPIO.setmode(GPIO.BCM)
         GPIO.setup(GPIO_PIN_L_a, GPIO.OUT)
         GPIO.setup(GPIO_PIN_L_b, GPIO.OUT)
         GPIO.setup(GPIO_PIN_R_a, GPIO.OUT)
         GPIO.setup(GPIO_PIN_R_b, GPIO.OUT)
 
-    def gpio_control_callback(self, request, response):
-        self.delay = self.get_parameter(PARAMETER_NAME).get_parameter_value().integer_value
-        print(f"{Fore.RED}Delay param: {self.delay}{Fore.RESET}")
+        rospy.loginfo('GPIO Control Node has been started.')
+
+    def gpio_control_callback(self, request):
+        self.delay = rospy.get_param(PARAMETER_NAME, self.delay)
+        rospy.loginfo(f"{Fore.RED}Delay param: {self.delay}{Fore.RESET}")
+
         if request.data:
-            self.open_gripper()
-            response.success = True
-            response.message = f"gripper OPENED"
+            self.open_grippers()
+            return SetBoolResponse(success=True, message="Gripper OPENED")
         else:
-            self.close_gripper()
-            response.success = True
-            response.message = f"gripper CLOSED"
-        return response
+            self.close_grippers()
+            return SetBoolResponse(success=True, message="Gripper CLOSED")
 
-    def open_gripper(self):
-            GPIO.output(GPIO_PIN_L_a, GPIO.HIGH)
-            GPIO.output(GPIO_PIN_L_b, GPIO.HIGH)
-            time.sleep(self.delay)
-            GPIO.output(GPIO_PIN_L_a, GPIO.LOW)
-            GPIO.output(GPIO_PIN_L_b, GPIO.LOW)
+    def open_grippers(self):
+        rospy.loginfo('Opening gripper...')
+        GPIO.output(GPIO_PIN_L_a, GPIO.HIGH)
+        GPIO.output(GPIO_PIN_L_b, GPIO.HIGH)
+        time.sleep(self.delay)
+        GPIO.output(GPIO_PIN_L_a, GPIO.LOW)
+        GPIO.output(GPIO_PIN_L_b, GPIO.LOW)
 
-    def close_gripper(self):
-            GPIO.output(GPIO_PIN_R_a, GPIO.HIGH)
-            GPIO.output(GPIO_PIN_R_b, GPIO.HIGH)
-            time.sleep(self.delay)
-            GPIO.output(GPIO_PIN_R_a, GPIO.LOW)
-            GPIO.output(GPIO_PIN_R_b, GPIO.LOW)
-  
-def main(args=None):
-    rclpy.init()
-    gpio_control_node = GPIOControlNode()
-    rclpy.spin(gpio_control_node)
-    rclpy.shutdown()
+    def close_grippers(self):
+        rospy.loginfo('Closing gripper...')
+        GPIO.output(GPIO_PIN_R_a, GPIO.HIGH)
+        GPIO.output(GPIO_PIN_R_b, GPIO.HIGH)
+        time.sleep(self.delay)
+        GPIO.output(GPIO_PIN_R_a, GPIO.LOW)
+        GPIO.output(GPIO_PIN_R_b, GPIO.LOW)
+
+    def cleanup(self):
+        rospy.loginfo('Cleaning up GPIO...')
+        GPIO.cleanup()
 
 if __name__ == '__main__':
-    main()
+    node = GPIOControlNode()
+    rospy.on_shutdown(node.cleanup)
+    rospy.spin()
