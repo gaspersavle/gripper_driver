@@ -10,20 +10,20 @@ GPIO_PIN_L_b = 27
 GPIO_PIN_R_a = 2
 GPIO_PIN_R_b = 3
 
-SERVICE_NAME_LEFT="gripper_left"
-SERVICE_NAME_RIGHT="gripper_right"
-SERVICE_NAME_BOTH="gripper_both"
-
+SERVICE_NAME_LEFT="gripper_left_open"
+SERVICE_NAME_RIGHT="gripper_right_open"
+SERVICE_NAME_BOTH="gripper_both_open"
+PARAMETER_NAME = "gripper_delay"
 
 class GPIOControlNode(Node):
     def __init__(self):
         super().__init__('gpio_control_node')
         DEFAULT_DELAY = 4
-        self.delay_param = None
+        self.delay = None
         self.service_left= self.create_service(SetBool, SERVICE_NAME_LEFT, self.gpio_control_callback_L)
         self.service_right = self.create_service(SetBool, SERVICE_NAME_RIGHT, self.gpio_control_callback_R)
         self.service_both = self.create_service(SetBool, SERVICE_NAME_BOTH, self.gpio_control_callback_BOTH)
-        self.declare_parameter('gripper_timeout', rclpy.Parameter.Type.INTEGER)
+        self.declare_parameter(PARAMETER_NAME, DEFAULT_DELAY)
         GPIO.setmode(GPIO.BCM)
 
         GPIO.setup(GPIO_PIN_L_a, GPIO.OUT)
@@ -32,8 +32,8 @@ class GPIOControlNode(Node):
         GPIO.setup(GPIO_PIN_R_b, GPIO.OUT)
 
     def gpio_control_callback_L(self, request, response):
-        self.my_param = self.get_parameter('my_parameter')#.get_parameter_value()
-        print(f"{Fore.RED}Delay param: {self.my_param}")
+        self.delay = self.get_parameter(PARAMETER_NAME).get_parameter_value().integer_value
+        print(f"{Fore.RED}Delay param: {self.delay}{Fore.RESET}")
         if request.data:
             self.open_gripper("left")
             response.success = True
@@ -45,6 +45,7 @@ class GPIOControlNode(Node):
         return response
 
     def gpio_control_callback_R(self, request, response):
+        self.delay = self.get_parameter(PARAMETER_NAME).get_parameter_value().integer_value
         if request.data:
             self.open_gripper("right")
             response.success = True
@@ -56,8 +57,8 @@ class GPIOControlNode(Node):
         return response
 
     def gpio_control_callback_BOTH(self, request, response):
-        self.my_param = self.get_parameter('my_parameter')#.get_parameter_value()
-        print(f"{Fore.RED}Delay param: {self.my_param}")
+        self.delay = self.get_parameter(PARAMETER_NAME).get_parameter_value().integer_value
+        print(f"{Fore.RED}Delay param: {self.delay}{Fore.RESET}")
         if request.data:
             self.open_gripper("both")
             response.success = True
@@ -74,13 +75,13 @@ class GPIOControlNode(Node):
         if side == "left":
             GPIO.output(GPIO_PIN_L_a, GPIO.LOW)
             GPIO.output(GPIO_PIN_L_b, GPIO.HIGH)
-            time.sleep(DELAY)
+            time.sleep(self.delay)
             GPIO.output(GPIO_PIN_L_a, GPIO.LOW)
             GPIO.output(GPIO_PIN_L_b, GPIO.LOW)
         elif side == "right":
             GPIO.output(GPIO_PIN_R_a, GPIO.HIGH)
             GPIO.output(GPIO_PIN_R_b, GPIO.LOW)
-            time.sleep(DELAY)
+            time.sleep(self.delay)
             GPIO.output(GPIO_PIN_R_a, GPIO.LOW)
             GPIO.output(GPIO_PIN_R_b, GPIO.LOW)
         else:
@@ -88,7 +89,7 @@ class GPIOControlNode(Node):
             GPIO.output(GPIO_PIN_L_b, GPIO.HIGH)
             GPIO.output(GPIO_PIN_R_a, GPIO.HIGH)
             GPIO.output(GPIO_PIN_R_b, GPIO.LOW)
-            time.sleep(DELAY)
+            time.sleep(self.delay)
             GPIO.output(GPIO_PIN_L_a, GPIO.LOW)
             GPIO.output(GPIO_PIN_L_b, GPIO.LOW)
             GPIO.output(GPIO_PIN_R_a, GPIO.LOW)
@@ -100,13 +101,13 @@ class GPIOControlNode(Node):
         if side == "left":
             GPIO.output(GPIO_PIN_L_a, GPIO.HIGH)
             GPIO.output(GPIO_PIN_L_b, GPIO.LOW)
-            time.sleep(DELAY)
+            time.sleep(self.delay)
             GPIO.output(GPIO_PIN_L_a, GPIO.LOW)
             GPIO.output(GPIO_PIN_L_b, GPIO.LOW)
         elif side == "right":
             GPIO.output(GPIO_PIN_R_a, GPIO.LOW)
             GPIO.output(GPIO_PIN_R_b, GPIO.HIGH)
-            time.sleep(DELAY)
+            time.sleep(self.delay)
             GPIO.output(GPIO_PIN_R_a, GPIO.LOW)
             GPIO.output(GPIO_PIN_R_b, GPIO.LOW)
         else:
@@ -114,7 +115,7 @@ class GPIOControlNode(Node):
             GPIO.output(GPIO_PIN_L_b, GPIO.LOW)
             GPIO.output(GPIO_PIN_R_a, GPIO.LOW)
             GPIO.output(GPIO_PIN_R_b, GPIO.HIGH)
-            time.sleep(DELAY)
+            time.sleep(self.delay)
             GPIO.output(GPIO_PIN_L_a, GPIO.LOW)
             GPIO.output(GPIO_PIN_L_b, GPIO.LOW)
             GPIO.output(GPIO_PIN_R_a, GPIO.LOW)
