@@ -1,13 +1,17 @@
 from std_srvs.srv import SetBool
 import rclpy
 from rclpy.node import Node
-import gpiozero as GPIO
+from gpiozero import LED
 import time
 
-GPIO_PIN_L_a = 17
-GPIO_PIN_L_b = 27
-GPIO_PIN_R_a = 2
-GPIO_PIN_R_b = 3
+GPIO_PIN_L_1_a = LED(2)
+GPIO_PIN_L_1_b = LED(3)
+GPIO_PIN_L_2_a = LED(17)
+GPIO_PIN_L_2_b = LED(27)
+GPIO_PIN_R_1_a = LED(10)
+GPIO_PIN_R_1_b = LED(9)
+GPIO_PIN_R_2_a = LED(5)
+GPIO_PIN_R_2_b = LED(6)
 
 SERVICE_NAME_LEFT="gripper_left"
 SERVICE_NAME_RIGHT="gripper_right"
@@ -19,12 +23,6 @@ class GPIOControlNode(Node):
         super().__init__('gpio_control_node')
         self.service_left= self.create_service(SetBool, SERVICE_NAME_LEFT, self.gpio_control_callback_L)
         self.service_right = self.create_service(SetBool, SERVICE_NAME_RIGHT, self.gpio_control_callback_R)
-        GPIO.setmode(GPIO.BCM)
-
-        GPIO.setup(GPIO_PIN_L_a, GPIO.OUT)
-        GPIO.setup(GPIO_PIN_L_b, GPIO.OUT)
-        GPIO.setup(GPIO_PIN_R_a, GPIO.OUT)
-        GPIO.setup(GPIO_PIN_R_b, GPIO.OUT)
 
     def gpio_control_callback_L(self, request, response):
         if request.data:
@@ -52,33 +50,49 @@ class GPIOControlNode(Node):
         sides = ["left", "right"]
         assert side in sides
         if side == "left":
-            GPIO.output(GPIO_PIN_L_a, GPIO.LOW)
-            GPIO.output(GPIO_PIN_L_b, GPIO.HIGH)
+            GPIO_PIN_L_1_a.off()
+            GPIO_PIN_L_1_b.on()
+            GPIO_PIN_L_2_a.off()
+            GPIO_PIN_L_2_b.on()
             time.sleep(DELAY)
-            GPIO.output(GPIO_PIN_L_a, GPIO.LOW)
-            GPIO.output(GPIO_PIN_L_b, GPIO.LOW)
+            GPIO_PIN_L_1_a.off()
+            GPIO_PIN_L_1_b.off()
+            GPIO_PIN_L_2_a.off()
+            GPIO_PIN_L_2_b.off()
         else:
-            GPIO.output(GPIO_PIN_R_a, GPIO.HIGH)
-            GPIO.output(GPIO_PIN_R_b, GPIO.LOW)
+            GPIO_PIN_R_1_a.off()
+            GPIO_PIN_R_1_b.on()
+            GPIO_PIN_R_2_a.off()
+            GPIO_PIN_R_2_b.on()
             time.sleep(DELAY)
-            GPIO.output(GPIO_PIN_R_a, GPIO.LOW)
-            GPIO.output(GPIO_PIN_R_b, GPIO.LOW)
+            GPIO_PIN_R_1_a.off()
+            GPIO_PIN_R_1_b.off()
+            GPIO_PIN_R_2_a.off()
+            GPIO_PIN_R_2_b.off()
     
     def close_gripper(self, side:str):
         sides = ["left", "right"]
         assert side in sides
         if side == "left":
-            GPIO.output(GPIO_PIN_L_a, GPIO.HIGH)
-            GPIO.output(GPIO_PIN_L_b, GPIO.LOW)
+            GPIO_PIN_L_1_a.on()
+            GPIO_PIN_L_1_b.off()
+            GPIO_PIN_L_2_a.on()
+            GPIO_PIN_L_2_b.off()
             time.sleep(DELAY)
-            GPIO.output(GPIO_PIN_L_a, GPIO.LOW)
-            GPIO.output(GPIO_PIN_L_b, GPIO.LOW)
+            GPIO_PIN_L_1_a.off()
+            GPIO_PIN_L_1_b.off()
+            GPIO_PIN_L_2_a.off()
+            GPIO_PIN_L_2_b.off()
         else:
-            GPIO.output(GPIO_PIN_R_a, GPIO.LOW)
-            GPIO.output(GPIO_PIN_R_b, GPIO.HIGH)
+            GPIO_PIN_R_1_a.on()
+            GPIO_PIN_R_1_b.off()
+            GPIO_PIN_R_2_a.on()
+            GPIO_PIN_R_2_b.off()
             time.sleep(DELAY)
-            GPIO.output(GPIO_PIN_R_a, GPIO.LOW)
-            GPIO.output(GPIO_PIN_R_b, GPIO.LOW)
+            GPIO_PIN_R_1_a.off()
+            GPIO_PIN_R_1_b.off()
+            GPIO_PIN_R_2_a.off()
+            GPIO_PIN_R_2_b.off()
 
 def main(args=None):
     rclpy.init()
