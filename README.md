@@ -30,6 +30,10 @@ You can create and build a workspace by following these instructions:
 - http://wiki.ros.org/catkin/Tutorials/create_a_workspace
 - https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Creating-A-Workspace/Creating-A-Workspace.html
 
+## Wiring
+Below is the wiring diagram of how the components should be interconnected to ensure plug and play operation.
+![wiring diagram](figures/wiring.png)
+
 ## Installation
 1. Clone this repository into the `src` directory of your workspace
    ```bash
