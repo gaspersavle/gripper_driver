@@ -32,6 +32,7 @@ You can create and build a workspace by following these instructions:
 
 ## Wiring
 Below is the wiring diagram of how the components should be interconnected to ensure plug and play operation.
+
 ![wiring diagram](figures/wiring.png)
 
 ## Installation
